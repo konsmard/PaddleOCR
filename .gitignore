@@ -11,6 +11,15 @@ inference/
 inference_results/
 output/
 train_data/
+cropped_images/
+cropped_images2/
+cropped_images3/
+cropped_images_llava/
+cropped_images_paddleclass/
+output_dir/
+output_dir2/
+output_dir_paddle/
+output_images/
 log/
 *.DS_Store
 *.vs
