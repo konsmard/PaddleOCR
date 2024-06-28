@@ -376,6 +376,63 @@ def resize_img(img, input_size=600):
     img = cv2.resize(img, None, None, fx=im_scale, fy=im_scale)
     return img
 
+def draw_ocr_enum(
+    image,
+    boxes,
+    txts=None,
+    scores=None,
+    drop_score=0.5,
+    font_path="./doc/fonts/simfang.ttf",
+):
+    """
+    Visualize the results of OCR detection and recognition
+    args:
+        image(Image|array): RGB image
+        boxes(list): boxes with shape(N, 4, 2)
+        txts(list): the texts
+        scores(list): txxs corresponding scores
+        drop_score(float): only scores greater than drop_threshold will be visualized
+        font_path: the path of font which is used to draw text
+    return(array):
+        the visualized img
+    """
+    if scores is None:
+        scores = [1] * len(boxes)
+    box_num = len(boxes)
+    for idx, box in enumerate(boxes):
+        if scores[idx] < drop_score or math.isnan(scores[idx]):
+            continue
+        
+        box = np.reshape(np.array(box), [-1, 1, 2]).astype(np.int64)
+        image = cv2.polylines(np.array(image), [box], True, (255, 0, 0), 2)
+        
+        # Draw index above the bounding box
+        index_text = str(idx+1)
+        box_top_left = tuple(box[0][0])
+        text_position = (box_top_left[0], box_top_left[1] - 10)  # Adjust the offset (-10) as needed
+        
+        # Put the index above the bounding box
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.5
+        font_color = (255, 0, 0)
+        thickness = 1
+        line_type = cv2.LINE_AA
+        
+        image = cv2.putText(image, index_text, text_position, font, font_scale, font_color, thickness, line_type)
+    if txts is not None:
+        img = np.array(resize_img(image, input_size=600))
+        txt_img = text_visual(
+            txts,
+            scores,
+            img_h=img.shape[0],
+            img_w=600,
+            threshold=drop_score,
+            font_path=font_path,
+        )
+        img = np.concatenate([np.array(img), np.array(txt_img)], axis=1)
+        return img
+    return image
+
 
 def draw_ocr(
     image,
